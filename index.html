@@ -186,7 +186,26 @@ document.addEventListener('input', function(e) { if (e.target.tagName === 'TEXTA
 const categories = [{ label: 'Lifestyle & habits', keys: ['sleep_consistency'] },{ label: 'Recovery', keys: ['energy_recovery', 'mobility'] },{ label: 'Nutrition', keys: ['nutrition_confidence'] },{ label: 'Fitness', keys: ['aerobic_base', 'repeat_sprint'] },{ label: 'Strength', keys: ['lower_strength', 'upper_strength'] },{ label: 'Power', keys: ['power'] },{ label: 'Speed', keys: ['acceleration', 'top_speed', 'agility'] }];
 function scoreCategory(keys) { let total = 0, count = 0; keys.forEach(k => { if (typeof answers[k] === 'number') { total += answers[k]; count++; } }); return count ? Math.round((total / (count * 5)) * 100) : null; }
 function tagInfo(score) { if (score >= 70) return { label: 'Good foundation', cls: 'tg-high', sc: 'sc-high', bar: 'bar-high' }; if (score >= 45) return { label: 'Room to grow', cls: 'tg-mid', sc: 'sc-mid', bar: 'bar-mid' }; return { label: 'Priority area', cls: 'tg-low', sc: 'sc-low', bar: 'bar-low' }; }
-function submitForm() { const name = answers['player_name'] || 'Player'; document.getElementById('results-title').textContent = name + "'s pre-season snapshot"; document.getElementById('results-sub').textContent = 'Your self-assessment results — use this as a starting point with your coach.'; const priorities = []; let html = ''; categories.forEach(cat => { const score = scoreCategory(cat.keys); if (score === null) return; const info = tagInfo(score); if (score < 50) priorities.push(cat.label); html += '<div class="section" style="margin-bottom:0.75rem;"><div class="result-row"><span class="result-label">' + cat.label + '<span class="tag ' + info.cls + '">' + info.label + '</span></span><span class="result-score ' + info.sc + '">' + score + '%</span></div><div class="bar-bg"><div class="bar-fill ' + info.bar + '" style="width:' + score + '%"></div></div></div>'; }); if (priorities.length) { html += '<div class="section" style="margin-bottom:0.75rem;"><div style="font-size:11px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Focus areas this pre-season</div>' + priorities.map(p => '<div class="priority-item"><div class="dot"></div>' + p + '</div>').join('') + '</div>'; } document.getElementById('results-body').innerHTML = html; goTo('page-results'); }
+function buildResultsText() {
+  const name = answers['player_name'] || 'Player';
+  const lines = [name + "'s pre-season results:"];
+  categories.forEach(cat => {
+    const score = scoreCategory(cat.keys);
+    if (score === null) return;
+    lines.push(cat.label + ': ' + score + '%' + (score < 50 ? ' (priority area)' : ''));
+  });
+  return lines.join('\n');
+}
+function copyResults() {
+  const text = buildResultsText();
+  navigator.clipboard.writeText(text).then(function() {
+    const btn = document.getElementById('copy-btn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied — now message Jaz';
+    setTimeout(function() { btn.textContent = original; }, 2500);
+  });
+}
+  function submitForm() { const name = answers['player_name'] || 'Player'; document.getElementById('results-title').textContent = name + "'s pre-season snapshot"; document.getElementById('results-sub').textContent = 'Your self-assessment results — use this as a starting point with your coach.'; const priorities = []; let html = ''; categories.forEach(cat => { const score = scoreCategory(cat.keys); if (score === null) return; const info = tagInfo(score); if (score < 50) priorities.push(cat.label); html += '<div class="section" style="margin-bottom:0.75rem;"><div class="result-row"><span class="result-label">' + cat.label + '<span class="tag ' + info.cls + '">' + info.label + '</span></span><span class="result-score ' + info.sc + '">' + score + '%</span></div><div class="bar-bg"><div class="bar-fill ' + info.bar + '" style="width:' + score + '%"></div></div></div>'; }); if (priorities.length) { html += '<div class="section" style="margin-bottom:0.75rem;"><div style="font-size:11px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Focus areas this pre-season</div>' + priorities.map(p => '<div class="priority-item"><div class="dot"></div>' + p + '</div>').join('') + '</div>'; } document.getElementById('results-body').innerHTML = html; goTo('page-results'); }
 </script>
 </body>
 </html>
